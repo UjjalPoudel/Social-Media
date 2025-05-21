@@ -9,7 +9,6 @@ const Message = () => {
     <div>
       <h2>Messages</h2>
       <p>Active Conversation: {state.activeConversation}</p>
-      {/* Display a basic UI for now */}
     </div>
   );
 };
