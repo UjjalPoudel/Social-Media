@@ -82,6 +82,16 @@ const CreatePost = () => {
                 placeholder="https://example.com/image.jpg"
               />
               <div className="form-text">Leave empty for a default image</div>
+              {postData.image && (
+                <div className="my-3 text-center">
+                  <img
+                    src={postData.image}
+                    alt="Preview"
+                    className="img-fluid rounded"
+                    style={{ maxHeight: 300, objectFit: 'cover', width: '100%' }}
+                  />
+                </div>
+              )}
             </div>
             <div className="mb-3">
               <label htmlFor="tags" className="form-label">Tags</label>

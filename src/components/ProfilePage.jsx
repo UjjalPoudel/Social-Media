@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 const mockUser = {
   name: "Jane Doe",
   username: "janedoe",
-  avatar: "https://i.pravatar.cc/150?img=5",
+  avatar: "https://via.placeholder.com/80",
+  cover: "https://via.placeholder.com/500x200",
   bio: "Web developer. Coffee lover. Traveler.",
   posts: [
     { id: 1, content: "Hello world! This is my first post." },
@@ -13,7 +14,23 @@ const mockUser = {
 };
 
 const ProfilePage = () => {
-  const [user] = useState(mockUser);
+  const [user, setUser] = useState(mockUser);
+
+  useEffect(() => {
+    // Get current user ID from token
+    const userId = localStorage.getItem('token');
+    if (userId) {
+      const users = JSON.parse(localStorage.getItem('users') || '[]');
+      const found = users.find(u => u.id === userId);
+      if (found) {
+        setUser({
+          ...mockUser,
+          name: found.username,
+          username: found.username,
+        });
+      }
+    }
+  }, []);
 
   return (
     <div style={{ maxWidth: 500, margin: "2rem auto", padding: 24, border: "1px solid #eee", borderRadius: 8 }}>

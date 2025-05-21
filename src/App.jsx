@@ -14,6 +14,23 @@ import Register from './Auth/Register';
 
 function App() {
   const [selectedTab, setSelectedTab] = useState('Home');
+  const [isAuthenticated, setIsAuthenticated] = useState(
+    !!localStorage.getItem('token')
+  );
+
+  const handleAuthSuccess = () => setIsAuthenticated(true);
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    setIsAuthenticated(false);
+    setSelectedTab('Home');
+  };
+
+  if (!isAuthenticated) {
+    return (
+      <Register setSelectedTab={setSelectedTab} onAuthSuccess={handleAuthSuccess} />
+    );
+  }
 
   const renderContent = () => {
     switch (selectedTab) {
@@ -22,7 +39,12 @@ function App() {
       case 'Profile':
         return (
           <Container className="py-4">
-            <ProfilePage userId="current-user-id" isCurrentUser={true} selectedTab={selectedTab} setSelectedTab={setSelectedTab} />
+            <ProfilePage
+              userId="current-user-id"
+              isCurrentUser={true}
+              selectedTab={selectedTab}
+              setSelectedTab={setSelectedTab}
+            />
           </Container>
         );
       case 'Messages':
@@ -37,7 +59,6 @@ function App() {
             <Setting />
           </Container>
         );
-     
       case 'Register':
         return (
           <Container className="py-4">
@@ -75,7 +96,11 @@ function App() {
         <div className="d-flex min-vh-100">
           <Sidebar selectedTab={selectedTab} setSelectedTab={setSelectedTab} />
           <div className="d-flex flex-column flex-grow-1">
-            <Header selectedTab={selectedTab} setSelectedTab={setSelectedTab} />
+            <Header
+              selectedTab={selectedTab}
+              setSelectedTab={setSelectedTab}
+              onLogout={handleLogout}
+            />
             <div className="flex-grow-1">{renderContent()}</div>
             <Footer />
           </div>

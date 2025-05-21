@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Container, Card, Form, Button, Alert, Spinner } from 'react-bootstrap';
 
-const Register = ({ setSelectedTab }) => {
+const Register = ({ setSelectedTab, onAuthSuccess }) => {
   const [mode, setMode] = useState('login'); // 'login' or 'register'
   const [formData, setFormData] = useState({
     email: '',
@@ -11,6 +11,9 @@ const Register = ({ setSelectedTab }) => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
+
+  // Helper to generate a unique user ID
+  const generateUserId = () => 'user_' + Date.now() + Math.floor(Math.random() * 1000);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -25,38 +28,56 @@ const Register = ({ setSelectedTab }) => {
     setSuccess('');
 
     try {
-      const endpoint = mode === 'login' ? '/api/auth/login' : '/api/auth/register';
-      const body = mode === 'register'
-        ? { email: formData.email, password: formData.password, username: formData.username }
-        : { email: formData.email, password: formData.password };
+      if (mode === 'register') {
+        // Simple validation
+        if (!formData.username || !formData.email || !formData.password) {
+          setError('All fields are required.');
+          setLoading(false);
+          return;
+        }
 
-      // Mock API call; replace with your endpoint
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      });
+        // Simulate API call or save to localStorage
+        const userId = generateUserId();
+        const user = {
+          id: userId,
+          username: formData.username,
+          email: formData.email,
+          password: formData.password, // In real apps, never store plain passwords!
+        };
 
-      if (!response.ok) {
-        const errData = await response.json();
-        throw new Error(errData.message || 'Authentication failed');
+        // Save user to localStorage (for demo)
+        let users = JSON.parse(localStorage.getItem('users') || '[]');
+        // Check if email already exists
+        if (users.some(u => u.email === user.email)) {
+          setError('Email already registered.');
+          setLoading(false);
+          return;
+        }
+        users.push(user);
+        localStorage.setItem('users', JSON.stringify(users));
+
+        setSuccess('Registration successful! You can now log in.');
+        setMode('login');
+        setFormData({ email: '', password: '', username: '' }); // Clear form
+      } else {
+        // LOGIN
+        let users = JSON.parse(localStorage.getItem('users') || '[]');
+        const found = users.find(
+          u => u.email === formData.email && u.password === formData.password
+        );
+        if (!found) {
+          setError('Invalid email or password.');
+          setLoading(false);
+          return;
+        }
+        // Save token (simulate login)
+        localStorage.setItem('token', found.id);
+        setSuccess('Login successful! Redirecting...');
+        setTimeout(() => {
+          if (onAuthSuccess) onAuthSuccess();
+          setSelectedTab('Home');
+        }, 1000);
       }
-
-      const savedConversations = localStorage.getItem('conversations');
-if (savedConversations) {
-  try {
-    dispatch({
-      type: 'LOAD_CONVERSATIONS',
-      payload: JSON.parse(savedConversations),
-    });
-  } catch (err) {
-    console.error("Failed to parse conversations:", err);
-    localStorage.removeItem('conversations'); // optional: clean corrupted data
-  }
-}
-      const data = await response.json();
-      setSuccess(mode === 'login' ? 'Logged in successfully!' : 'Registered successfully!');
-      setTimeout(() => setSelectedTab('Home'), 1000);
     } catch (err) {
       setError(err.message || 'An error occurred');
     } finally {
@@ -135,7 +156,7 @@ if (savedConversations) {
                 <Button
                   variant="link"
                   className="text-primary p-0"
-                  onClick={() => { setMode('register'); setError(''); setSuccess(''); }}
+                  onClick={() => { setMode('register'); setError(''); setSuccess(''); setFormData({ email: '', password: '', username: '' }); }}
                   aria-label="Go to register"
                 >
                   Register
@@ -147,7 +168,7 @@ if (savedConversations) {
                 <Button
                   variant="link"
                   className="text-primary p-0"
-                  onClick={() => { setMode('login'); setError(''); setSuccess(''); }}
+                  onClick={() => { setMode('login'); setError(''); setSuccess(''); setFormData({ email: '', password: '', username: '' }); }}
                   aria-label="Go to login"
                 >
                   Log In

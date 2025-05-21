@@ -1,23 +1,18 @@
 import React, { useEffect, useState } from "react";
 
-function Header({ selectedTab, setSelectedTab }) {
+function Header({ selectedTab, setSelectedTab, onLogout }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  // Add effect to handle hover functionality for dropdowns
   useEffect(() => {
     const dropdownItems = document.querySelectorAll('.dropdown');
-    
     dropdownItems.forEach(dropdown => {
       dropdown.addEventListener('mouseenter', () => {
         dropdown.querySelector('.dropdown-menu').classList.add('show');
       });
-      
       dropdown.addEventListener('mouseleave', () => {
         dropdown.querySelector('.dropdown-menu').classList.remove('show');
       });
     });
-    
-    // Cleanup event listeners on component unmount
     return () => {
       dropdownItems.forEach(dropdown => {
         dropdown.removeEventListener('mouseenter', () => {});
@@ -28,15 +23,20 @@ function Header({ selectedTab, setSelectedTab }) {
 
   const handleOnClick = (tabName) => {
     setSelectedTab(tabName);
-    setIsMenuOpen(false); // Close mobile menu when item is clicked
+    setIsMenuOpen(false);
   };
-  
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    if (onLogout) onLogout();
+    window.alert("You have been logged out!");
+    setSelectedTab('Register');
+  };
+
   return (
     <nav className="navbar navbar-expand-md navbar-dark bg-dark position-relative">
       <div className="container-fluid">
         <a className="navbar-brand text-white" href="#" onClick={() => handleOnClick("Home")}>Social Media</a>
-        
-        {/* Custom toggle button without the triple equals */}
         <button 
           className="d-md-none btn btn-dark border-0" 
           type="button" 
@@ -45,7 +45,6 @@ function Header({ selectedTab, setSelectedTab }) {
         >
           <i className="bi bi-list fs-4"></i>
         </button>
-        
         <div className={`collapse navbar-collapse ${isMenuOpen ? 'show' : ''}`}>
           <ul className="navbar-nav me-auto mb-2 mb-md-0">
             <li className="nav-item" onClick={() => handleOnClick("Home")}>
@@ -74,13 +73,10 @@ function Header({ selectedTab, setSelectedTab }) {
               <li className="nav-item" onClick={() => handleOnClick("Register")}>
                 <a className={`nav-link text-white ${selectedTab === "Register" ? "active" : ""}`} href="#">Register</a>
               </li>
-              <li className="nav-item dropdown">  
-                <ul className="dropdown-menu dropdown-menu-dark dropdown-menu-end">
-                  <li onClick={() => handleOnClick("Profile")}><a className="dropdown-item text-white" href="#">Profile</a></li>
-                  <li onClick={() => handleOnClick("Settings")}><a className="dropdown-item text-white" href="#">Settings</a></li>
-                  <li><hr className="dropdown-divider" /></li>
-                  <li onClick={() => handleOnClick("Logout")}><a className="dropdown-item text-white" href="#">Logout</a></li>
-                </ul>
+              <li className="nav-item">
+                <button className="btn btn-outline-danger ms-2" onClick={handleLogout}>
+                  Logout
+                </button>
               </li>
             </ul>
           </div>
